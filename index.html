@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Veille Leboncoin</title>
+<style>
+:root{
+  --bg:#f6f4ef; --surface:#fffdf8; --ink:#1d1b17; --muted:#6c675d; --line:#e4dfd3;
+  --accent:#e2621b; --accent-ink:#fff; --ok:#1f7a4d; --ok-bg:#e3f2e8; --warn:#9a5b00; --warn-bg:#fbeed5;
+  --new:#2a55c9; --new-bg:#e3eafb; --over:#b3261e; --over-bg:#fbe4e2; --shadow:0 1px 2px rgba(40,30,10,.06),0 4px 16px rgba(40,30,10,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#16150f; --surface:#1f1d17; --ink:#efebe1; --muted:#a39d90; --line:#34312a;
+    --accent:#ff7a33; --ok:#6fd39d; --ok-bg:#183424; --warn:#f0b45c; --warn-bg:#3a2a12; --new:#8fb0ff; --new-bg:#1b2546; --over:#ff8a80; --over-bg:#3d1714;
+    --shadow:0 1px 2px rgba(0,0,0,.4); }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif}
+a{color:inherit}
+header{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+.top{display:flex;gap:16px;align-items:center;justify-content:space-between;padding:14px 0;flex-wrap:wrap}
+h1{font-size:20px;margin:0;letter-spacing:-.01em}
+h1 span{color:var(--accent)}
+.meta{color:var(--muted);font-size:13px}
+.btn{appearance:none;border:0;border-radius:10px;padding:10px 16px;font:600 14px/1 inherit;cursor:pointer;background:var(--accent);color:var(--accent-ink)}
+.btn[disabled]{opacity:.55;cursor:progress}
+.controls{display:flex;gap:14px;flex-wrap:wrap;align-items:center;padding:0 0 12px}
+.controls label{font-size:13px;color:var(--muted);display:flex;gap:6px;align-items:center}
+select{font:inherit;font-size:13px;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.progress{height:3px;background:var(--line);border-radius:3px;overflow:hidden;margin-bottom:-1px}
+.progress i{display:block;height:100%;width:0;background:var(--accent);transition:width .4s}
+.banner{margin:16px 0 0;padding:12px 14px;border-radius:10px;background:var(--warn-bg);color:var(--warn);font-size:14px}
+main{padding:18px 0 60px}
+.model{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);margin:0 0 18px;overflow:hidden}
+.mhead{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:start;padding:16px 18px;border-bottom:1px solid var(--line)}
+.rank{font:700 13px/1 ui-monospace,Menlo,monospace;background:var(--ink);color:var(--surface);border-radius:8px;padding:7px 8px;min-width:34px;text-align:center}
+.mname{font-weight:650;font-size:16px}
+.mname small{font-weight:500;color:var(--muted);font-size:13px;margin-left:6px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.chip{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:2px 8px;color:var(--muted)}
+.note{font:700 18px/1 ui-monospace,Menlo,monospace;text-align:right}
+.note small{display:block;font:500 11px/1.4 inherit;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1px;background:var(--line)}
+.stat{background:var(--surface);padding:10px 14px}
+.stat b{display:block;font-size:16px;font-variant-numeric:tabular-nums}
+.stat span{font-size:12px;color:var(--muted)}
+.ads{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:12px;padding:14px 18px 16px}
+.ad{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg);transition:transform .12s,border-color .12s}
+.ad:hover{transform:translateY(-2px);border-color:var(--accent)}
+.pos-lbc{background:#1a8a4e !important;font-family:inherit !important;letter-spacing:.01em}
+.pg{display:flex;flex-wrap:wrap;align-items:center;gap:3px 8px;margin:-1px 0 2px}
+.pg-bar{display:flex;gap:2px;align-items:flex-end}
+.pg-bar i{display:block;width:12px;height:5px;border-radius:2px;opacity:.28}
+.pg-bar i.on{height:9px;opacity:1}
+.pg-bar .s0{background:#1a8a4e}.pg-bar .s1{background:#5fb760}.pg-bar .s2{background:#8c94a3}.pg-bar .s3{background:#e39a2d}.pg-bar .s4{background:#d2452f}
+.pg-label{font-size:12px;font-weight:700}
+.lv0{color:#1a8a4e}.lv1{color:#3f9c47}.lv2{color:var(--muted)}.lv3{color:#c27a10}.lv4{color:#c23a25}
+.pg-est{flex-basis:100%;font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.pg-est b{font-weight:650}
+.pg-none .pg-label{font-weight:500;color:var(--muted)}
+@media (prefers-color-scheme: dark){.lv0{color:#5fd391}.lv1{color:#8fdc8f}.lv3{color:#f0b45c}.lv4{color:#ff8a75}}
+.adlink{display:flex;flex-direction:column;flex:1;text-decoration:none;color:inherit}
+.avisbar{display:flex;gap:5px;flex-wrap:wrap;align-items:center;padding:8px 11px 10px;border-top:1px dashed var(--line)}
+.mhead .avisbar{padding:8px 0 0;border:0}
+.avisbtn{margin-left:auto;font:600 12px/1 inherit;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:7px 10px;cursor:pointer}
+.mhead .avisbtn{margin-left:0}
+.avisbtn:hover{border-color:var(--accent);color:var(--accent)}
+dialog{border:0;border-radius:14px;padding:0;width:min(560px,calc(100vw - 32px));background:var(--surface);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(20,15,5,.45)}
+.dlg-head{display:flex;gap:10px;align-items:start;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line)}
+.dlg-head h2{font-size:15px;margin:0;line-height:1.35}
+.dlg-head button{border:0;background:none;font-size:20px;line-height:1;cursor:pointer;color:var(--muted)}
+#avisList{list-style:none;margin:0;padding:6px 18px;max-height:38vh;overflow:auto}
+#avisList li{padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}
+#avisList li div{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#avisList time{color:var(--muted);font-size:12px;margin-left:auto}
+#avisList p{margin:6px 0 0;white-space:pre-wrap}
+#avisList .none{color:var(--muted)}
+#avisForm{display:grid;gap:10px;padding:14px 18px 18px;grid-template-columns:1fr 1fr}
+#avisForm label{display:grid;gap:4px;font-size:12px;color:var(--muted)}
+#avisForm .full{grid-column:1/-1}
+#avisForm input,#avisForm select,#avisForm textarea{font:inherit;font-size:14px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+#avisForm textarea{min-height:90px;resize:vertical}
+#avisMsg{font-size:13px;color:var(--muted);align-self:center}
+.thumb{aspect-ratio:4/3;background:var(--line);position:relative;overflow:hidden}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.pos{position:absolute;left:8px;top:8px;background:rgba(0,0,0,.72);color:#fff;font:700 12px/1 ui-monospace,Menlo,monospace;border-radius:6px;padding:5px 6px}
+.body{padding:10px 11px 12px;display:flex;flex-direction:column;gap:5px;flex:1}
+.price{font-size:19px;font-weight:700;font-variant-numeric:tabular-nums}
+.line{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.line b{color:var(--ink);font-weight:600}
+.ttl{font-size:13px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:auto;padding-top:4px}
+.tag{font-size:11px;font-weight:600;border-radius:6px;padding:2px 6px}
+.t-ok{background:var(--ok-bg);color:var(--ok)}
+.t-warn{background:var(--warn-bg);color:var(--warn)}
+.t-new{background:var(--new-bg);color:var(--new)}
+.t-over{background:var(--over-bg);color:var(--over)}
+.chip-over{border-color:var(--over);color:var(--over)}
+.t-muted{background:var(--line);color:var(--muted)}
+.tabs{display:flex;gap:4px;background:var(--line);padding:4px;border-radius:12px;margin-left:auto;margin-right:12px}
+.tabs a{text-decoration:none;font:600 14px/1 inherit;padding:9px 16px;border-radius:9px;color:var(--muted)}
+.tabs a.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.tabs a:hover{color:var(--ink)}
+.chip-ok{border-color:#5fb760;color:#1a8a4e}
+.sc-off{opacity:.22}
+.scores{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px}
+.sc{display:flex;align-items:baseline;gap:5px;font-size:13px;font-variant-numeric:tabular-nums}
+.sc-l{color:var(--muted);font-size:12px}
+.sc b{font-weight:700}
+.sc small{color:var(--muted);font-weight:500}
+.conso td.month b{color:var(--accent)}
+.conso{padding:12px 18px 0;overflow-x:auto}
+.conso table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+.conso th{text-align:left;font-weight:600;color:var(--muted);padding:4px 10px 4px 0;white-space:nowrap}
+.conso thead th{font-weight:500;font-size:12px}
+.conso td{padding:4px 10px 4px 0;white-space:nowrap}
+.conso td b{font-weight:650;margin-right:6px}
+.conso td span{color:var(--muted)}
+.conso tbody tr+tr{border-top:1px solid var(--line)}
+.tag[title]{cursor:help}
+.empty{padding:16px 18px;color:var(--muted);font-size:14px}
+.more{display:block;margin:0 18px 16px;font:600 13px/1 inherit;background:none;border:1px dashed var(--line);border-radius:10px;padding:10px;color:var(--muted);cursor:pointer;width:calc(100% - 36px)}
+.more:hover{color:var(--ink);border-color:var(--muted)}
+.refnote{font-size:12px;color:var(--muted);padding:0 18px 12px}
+footer{color:var(--muted);font-size:12px;padding:0 0 30px}
+@media (max-width:720px){
+  .wrap{padding:0 16px}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .mhead{gap:10px;padding:14px}
+  .stat:last-child{grid-column:1/-1}
+  .ads{padding:12px 14px;grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <h1>Veille <span>Leboncoin</span></h1>
+        <div class="meta" id="meta">Chargement…</div>
+      </div>
+      <nav class="tabs" aria-label="Carburant">
+        <a href="./" id="tab-essence">Essence</a>
+        <a href="./?type=diesel" id="tab-diesel">Diesel</a>
+      </nav>
+      <button class="btn" id="run">Lancer une recherche</button>
+    </div>
+    <div class="controls">
+      <label>Annonces triées par
+        <select id="sortAds">
+          <option value="rank">Recommandé</option>
+          <option value="price">Prix croissant</option>
+          <option value="km">Kilométrage croissant</option>
+          <option value="year">Année la plus récente</option>
+          <option value="dist">Distance la plus courte</option>
+          <option value="deal">Meilleure affaire (estimation Leboncoin)</option>
+        </select>
+      </label>
+      <label>Modèles triés par
+        <select id="sortModels">
+          <option value="rank">Classement du tableau</option>
+          <option value="count">Nombre d'annonces</option>
+          <option value="avg">Prix moyen croissant</option>
+          <option value="best">Meilleure annonce la moins chère</option>
+          <option value="dist">Annonce la plus proche</option>
+        </select>
+      </label>
+      <label><input type="checkbox" id="climOnly"> Clim confirmée uniquement</label>
+      <label><input type="checkbox" id="ctOnly"> CT OK ou fait pour la vente</label>
+      <label><input type="checkbox" id="hideEmpty"> Masquer les modèles sans annonce</label>
+    </div>
+  </div>
+  <div class="progress"><i id="bar"></i></div>
+</header>
+
+<div class="wrap">
+  <div id="banner"></div>
+  <main id="list"></main>
+  <footer>
+    <p id="fuel"></p>
+    Stats de référence calculées le <span id="refDate"></span> (non recalculées). Distance à vol d'oiseau jusqu'à Angers ou Paris, la plus proche des deux.
+    Sélection par modèle : les 5 premières du classement maison (« Top 1 » à « Top 5 ») + jusqu'à 5 annonces classées « Très bonne affaire » par Leboncoin (« Choix Leboncoin », les plus sous l'estimation d'abord), sans doublon.
+    « Recommandé » = clim confirmée d'abord, puis kilométrage, prix, année et statut du CT (lu dans la description ; survolez l'étiquette CT pour voir la phrase repérée).
+    Sont écartées : les annonces hors France continentale (DOM-TOM et Corse), à moins de 2 000 €, à moins de 100 000 km ou à plus de 250 000 km, et celles avec un défaut annoncé (moteur/boîte HS, en l'état, export…).
+    Clim lue dans la description et la liste d'équipements : « Clim », « Clim HS / à recharger », « Sans clim » ou « Clim ? » (survolez pour voir la phrase repérée).
+  </footer>
+</div>
+
+<dialog id="avisDlg">
+  <div class="dlg-head"><h2 id="avisTitle"></h2><button id="avisClose" aria-label="Fermer">×</button></div>
+  <ul id="avisList"></ul>
+  <form id="avisForm">
+    <label>Votre nom<input id="avisName" required maxlength="40" autocomplete="name"></label>
+    <label>Verdict
+      <select id="avisVerdict">
+        <option value="bonne-affaire">Bonne affaire</option>
+        <option value="a-voir" selected>À voir</option>
+        <option value="a-eviter">À éviter</option>
+        <option value="info">Simple remarque</option>
+      </select>
+    </label>
+    <label class="full">Votre avis (points à vérifier, prix, défauts connus…)<textarea id="avisText" maxlength="1500"></textarea></label>
+    <label>Code d'accès<input id="avisCode" required maxlength="100" autocomplete="off"></label>
+    <span id="avisMsg"></span>
+    <button class="btn full" id="avisSend" type="submit">Publier l'avis</button>
+  </form>
+</dialog>
+
+<script>
+const $ = s => document.querySelector(s);
+const fmt = n => n == null ? '–' : Math.round(n).toLocaleString('fr-FR');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let MONTHLY_KM = 1200;
+let MODELS = [], RESULTS = {}, FUEL = null, COMMENTS = [], expanded = new Set(), polling = null;
+const ONLINE = !['localhost', '127.0.0.1', '::1', ''].includes(location.hostname);
+// Avis des garagistes : Supabase (clé publiable, lecture seule ; l'écriture passe par la fonction veille_add_avis + code d'accès)
+const SB_URL = 'https://brmnmtciqgfreyjbsawh.supabase.co';
+const SB_KEY = 'sb_publishable_JAGcmZFq-WwTV4_Mc5-D4A_kmTFTN-G';
+const SB_HEADERS = { apikey: SB_KEY, 'Content-Type': 'application/json' };
+const SEG = new URLSearchParams(location.search).get('type') === 'diesel' ? 'diesel' : 'essence';
+const SUFFIX = SEG === 'essence' ? '' : '_' + SEG;
+const API = ONLINE
+  ? { models: `data/models${SUFFIX}.json`, results: `data/results${SUFFIX}.json` }
+  : { models: `/api/models?seg=${SEG}`, results: `/api/results?seg=${SEG}` };
+let FILTERS = SEG === 'diesel' ? 'Diesel · manuelle · 5 portes' : 'Essence · manuelle · 5 portes';
+
+const PREF_KEYS = ['sortAds','sortModels','climOnly','ctOnly','hideEmpty'];
+function loadPrefs(){ try{ const p = JSON.parse(localStorage.getItem('veille-prefs')||'{}');
+  for (const k of PREF_KEYS){ const el = $('#'+k); if (k in p){ el.type==='checkbox' ? el.checked=p[k] : el.value=p[k]; } } }catch(e){} }
+function savePrefs(){ try{ const p={}; for (const k of PREF_KEYS){ const el=$('#'+k); p[k]= el.type==='checkbox'?el.checked:el.value; }
+  localStorage.setItem('veille-prefs', JSON.stringify(p)); }catch(e){} }
+
+function fmtDate(iso){ if(!iso) return '–'; const d = new Date(iso);
+  return d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'})+' à '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}); }
+
+function adsFor(m){
+  const live = (RESULTS.models||[]).find(x => x.id === m.id);
+  let ads = live ? live.ads.slice() : [];
+  if ($('#climOnly').checked) ads = ads.filter(a => a.clim);
+  if ($('#ctOnly').checked) ads = ads.filter(a => a.ct === 'ok' || a.ct === 'vente');
+  const by = $('#sortAds').value;
+  const cmp = {
+    rank:(a,b)=>a.rank-b.rank, price:(a,b)=>a.price-b.price, km:(a,b)=>a.km-b.km,
+    year:(a,b)=>(b.year-a.year)||(a.km-b.km), dist:(a,b)=>(a.dist_km??1e9)-(b.dist_km??1e9),
+    deal:(a,b)=>{ const r = x => { const i = PRICE_LEVELS.indexOf(x.price_pos); return i < 0 ? 9 : i; };
+      const gap = x => x.est_min ? x.price - x.est_min : 1e6; return (r(a)-r(b)) || (gap(a)-gap(b)); }
+  }[by];
+  return ads.sort(cmp);
+}
+
+// Sélection affichée par défaut : top 5 maison + jusqu'à 5 « Très bonne affaire » Leboncoin (sans doublon)
+function selection(m){
+  const all = adsFor(m);
+  const top = all.slice().sort((a,b) => a.rank - b.rank).slice(0, 5);
+  const ids = new Set(top.map(a => a.id));
+  const discount = a => a.est_min ? a.est_min - a.price : 0;
+  const lbc = all.filter(a => a.price_pos === 'Très bonne affaire' && !ids.has(a.id))
+    .sort((a,b) => discount(b) - discount(a)).slice(0, 5);
+  const pick = new Map([...top.map(a => [a.id, 'top']), ...lbc.map(a => [a.id, 'lbc'])]);
+  let shown = top.concat(lbc);
+  if ($('#sortAds').value !== 'rank') { const order = new Map(all.map((a,i) => [a.id, i])); shown.sort((a,b) => order.get(a.id) - order.get(b.id)); }
+  return { all, shown, pick };
+}
+
+function modelKey(m){
+  const by = $('#sortModels').value, ads = adsFor(m);
+  if (by==='count') return -ads.length;
+  if (by==='avg') return m.ref.avg ?? 1e9;
+  if (by==='best') return ads.length ? Math.min(...ads.map(a=>a.price)) : 1e9;
+  if (by==='dist') return ads.length ? Math.min(...ads.map(a=>a.dist_km??1e9)) : 1e9;
+  return m.rank;
+}
+
+function adCard(a, pos, target, pick){
+  const ribbon = pick === 'lbc' ? '<span class="pos pos-lbc">Choix Leboncoin</span>'
+    : pick === 'top' ? `<span class="pos">Top ${a.rank}</span>` : `<span class="pos">#${pos}</span>`;
+  const tags = [];
+  if (a.price > target) tags.push(`<span class="tag t-over">Hors budget +${fmt(a.price - target)} €</span>`);
+  if (a.is_new) tags.push('<span class="tag t-new">Nouveau</span>');
+  const cw = a.clim_why ? ` title="${esc(a.clim_why)}"` : '';
+  const cs = a.clim_status ?? (a.clim ? 'ok' : null);
+  if (cs === 'ok') tags.push(`<span class="tag t-ok"${cw}>Clim</span>`);
+  else if (cs === 'hs') tags.push(`<span class="tag t-over"${cw}>Clim HS / à recharger</span>`);
+  else if (cs === 'absent') tags.push(`<span class="tag t-over"${cw}>Sans clim</span>`);
+  else tags.push('<span class="tag t-warn">Clim ?</span>');
+  const why = a.ct_why ? ` title="${esc(a.ct_why)}"` : '';
+  if (a.ct === 'ok') tags.push(`<span class="tag t-ok"${why}>CT OK</span>`);
+  else if (a.ct === 'vente') tags.push(`<span class="tag t-ok"${why}>CT fait pour la vente</span>`);
+  else if (a.ct === 'ko') tags.push(`<span class="tag t-over"${why}>CT à faire</span>`);
+  else tags.push('<span class="tag t-muted">CT ?</span>');
+  const dist = a.dist_km != null ? `<b>${fmt(a.dist_km)} km</b> de ${esc(a.ref_city)}` : 'distance inconnue';
+  const img = a.image ? `<img src="${esc(a.image)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : '';
+  return `<div class="ad"><a class="adlink" href="${esc(a.url)}" target="_blank" rel="noopener noreferrer">
+    <div class="thumb">${img}${ribbon}</div>
+    <div class="body">
+      <div class="price">${fmt(a.price)} €</div>
+      ${priceGauge(a)}
+      <div class="line"><b>${fmt(a.km)} km</b> · ${esc(a.mec || a.year)}${a.hp ? ' · '+a.hp+' ch' : ''}</div>
+      <div class="line">${esc(a.city)}${a.zipcode ? ' ('+esc(a.zipcode.slice(0,2))+')' : ''}</div>
+      <div class="line">${dist}</div>
+      <div class="ttl">${esc(a.title)}</div>
+      <div class="tags">${tags.join('')}</div>
+    </div></a>${avisBar('ad:'+a.id, `${fmt(a.price)} € · ${a.title}`)}</div>`;
+}
+
+// --- Positionnement de prix Leboncoin -----------------------------------------
+const PRICE_LEVELS = ['Très bonne affaire', 'Bonne affaire', 'Prix équitable', 'Légèrement supérieur', 'Au-dessus du marché'];
+function priceGauge(a){
+  const i = PRICE_LEVELS.indexOf(a.price_pos);
+  if (i < 0) return `<div class="pg pg-none"><span class="pg-label">Estimation Leboncoin indisponible</span></div>`;
+  const segs = PRICE_LEVELS.map((_, k) => `<i class="s${k}${k === i ? ' on' : ''}"></i>`).join('');
+  let est = '';
+  if (a.est_min && a.est_max){
+    const d = a.price < a.est_min ? a.price - a.est_min : a.price > a.est_max ? a.price - a.est_max : 0;
+    const delta = d < 0 ? ` · <b class="lv0">${fmt(-d)} € sous</b>` : d > 0 ? ` · <b class="lv4">+${fmt(d)} €</b>` : '';
+    est = `<span class="pg-est">Estim. ${fmt(a.est_min)}–${fmt(a.est_max)} €${delta}</span>`;
+  }
+  return `<div class="pg" title="Positionnement calculé par Leboncoin">
+    <div class="pg-bar">${segs}</div><span class="pg-label lv${i}">${esc(a.price_pos)}</span>${est}</div>`;
+}
+
+// --- Avis des garagistes (site en ligne uniquement) ----------------------------
+const VERDICTS = {'bonne-affaire':['Bonne affaire','t-ok'], 'a-voir':['À voir','t-warn'], 'a-eviter':['À éviter','t-over'], 'info':['Remarque','t-muted']};
+function avisBar(target, title){
+  const list = COMMENTS.filter(c => c.target === target);
+  const counts = {};
+  list.forEach(c => counts[c.verdict] = (counts[c.verdict]||0)+1);
+  const chips = Object.entries(counts).filter(([v]) => v !== 'info')
+    .map(([v,n]) => `<span class="tag ${VERDICTS[v][1]}">${VERDICTS[v][0]} ×${n}</span>`).join('');
+  return `<div class="avisbar">${chips}<button class="avisbtn" data-target="${esc(target)}" data-title="${esc(title)}">
+    ${list.length ? `Avis garagistes (${list.length})` : 'Donner un avis'}</button></div>`;
+}
+function openAvis(target, title){
+  const dlg = $('#avisDlg');
+  dlg.dataset.target = target; dlg.dataset.title = title;
+  $('#avisTitle').textContent = title;
+  const list = COMMENTS.filter(c => c.target === target);
+  $('#avisList').innerHTML = list.length ? list.map(c => `<li><div><b>${esc(c.name)}</b>
+      <span class="tag ${VERDICTS[c.verdict]?.[1]||''}">${esc(VERDICTS[c.verdict]?.[0]||'')}</span>
+      <time>${fmtDate(c.at)}</time></div>${c.text ? `<p>${esc(c.text)}</p>` : ''}</li>`).join('')
+    : '<li class="none">Pas encore d’avis.</li>';
+  $('#avisMsg').textContent = '';
+  try { $('#avisName').value = localStorage.getItem('avis-name') || ''; $('#avisCode').value = localStorage.getItem('avis-code') || ''; } catch(e){}
+  $('#avisText').value = '';
+  dlg.showModal();
+}
+async function loadComments(){
+  COMMENTS = await fetch(SB_URL + '/rest/v1/veille_avis?select=*&order=at.asc', { headers: SB_HEADERS })
+    .then(r => r.ok ? r.json() : []).catch(() => []);
+}
+
+function scoresBlock(m){
+  const n = v => String(v).replace('.', ',');
+  if (m.score_items){
+    return `<div class="scores">${m.score_items.map(([label, v, w]) => {
+      const extra = label === 'Coffre' && m.coffre_l ? ` · ${m.coffre_l} L` : '';
+      return `<span class="sc"><span class="sc-l">${esc(label)}${w > 1 ? ` ×${w}` : ''}</span><b>${'★'.repeat(v)}<span class="sc-off">${'★'.repeat(5 - v)}</span></b>${extra ? `<small>${extra}</small>` : ''}</span>`;
+    }).join('')}</div>`;
+  }
+  const s = m.scores; if (!s) return '';
+  const item = (label, val, extra='') => `<span class="sc"><span class="sc-l">${label}</span><b>${val}</b>${extra}</span>`;
+  return `<div class="scores">
+    ${item('Fiabilité', n(s.fiab) + '<small>/5</small>')}
+    ${item('Réparation', n(s.repar) + '<small>/5</small>')}
+    ${item('Conso', n(s.conso) + '<small>/5</small>')}
+    ${item('Place AV/AR', n(s.place) + '<small>/5</small>')}
+    ${item('Coffre', `${m.coffre_l} L`, `<small> · ${n(s.coffre)}/5</small>`)}
+  </div>`;
+}
+
+function consoBlock(m){
+  if (!m.conso || !m.conso.length || !FUEL) return '';
+  const eur = l => (l * FUEL.price).toFixed(2).replace('.', ',') + ' €';
+  const l = v => v.toFixed(1).replace('.', ',') + ' L';
+  const km = MONTHLY_KM || 1200;
+  const monthL = c => c.mixte * km / 100;
+  const rows = m.conso.map(c => { const e = c.estimated ? '≈ ' : ''; return `<tr><th>${esc(c.engine)}</th>
+      <td><b>${e}${l(c.ville)}</b><span>${eur(c.ville)}</span></td>
+      <td><b>${e}${l(c.autoroute)}</b><span>${eur(c.autoroute)}</span></td>
+      <td class="month"><b>${Math.round(monthL(c))} L</b><span>${fmt(monthL(c) * FUEL.price)} €</span></td></tr>`; }).join('');
+  return `<div class="conso"><table>
+    <thead><tr><th>Conso réelle /100 km</th><th>Ville</th><th>Autoroute 130</th><th>${fmt(km)} km / mois</th></tr></thead>
+    <tbody>${rows}</tbody></table></div>`;
+}
+
+function render(){
+  const list = $('#list');
+  let models = MODELS.slice().sort((a,b)=>modelKey(a)-modelKey(b) || a.rank-b.rank);
+  if ($('#hideEmpty').checked) models = models.filter(m => adsFor(m).length);
+  list.innerHTML = models.map(m => {
+    const live = (RESULTS.models||[]).find(x=>x.id===m.id);
+    const sel = selection(m), ads = sel.all;
+    const showAll = expanded.has(m.id);
+    const shown = showAll ? ads : sel.shown;
+    const r = m.ref;
+    const liveTxt = live ? `${live.live.n_ok}` : '–';
+    const target = m.target ?? m.budget;
+    const budgetChip = target < m.budget
+      ? `<span class="chip chip-over">Budget ≤ ${fmt(target)} € · recherche élargie jusqu'à ${fmt(m.budget)} €</span>`
+      : `<span class="chip">Budget ≤ ${fmt(m.budget)} €</span>`;
+    return `<section class="model">
+      <div class="mhead">
+        <div class="rank">${m.rank}</div>
+        <div>
+          <div class="mname">${esc(m.name)}<small>${esc(m.engine)}</small></div>
+          <div class="chips">${budgetChip}${m.distrib ? `<span class="chip">Distribution : ${esc(m.distrib)}</span>` : ''}
+          ${m.fap ? `<span class="chip ${m.fap === 'Sans' ? 'chip-ok' : ''}">${m.fap === 'Sans' ? 'Sans FAP' : 'Avec FAP'}</span>` : ''}
+          <span class="chip">${esc(FILTERS)}</span></div>
+          ${scoresBlock(m)}
+          ${avisBar('model:'+m.id, 'Le modèle : ' + m.name + ' ' + m.engine)}
+        </div>
+        <div class="note">${Number(m.note20).toFixed(1).replace('.',',')}<small>/20</small></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><b>${fmt(r.n)}</b><span>annonces retenues (réf.)</span></div>
+        <div class="stat"><b>${r.avg!=null?fmt(r.avg)+' €':'–'}</b><span>prix moyen</span></div>
+        <div class="stat"><b>${r.med!=null?fmt(r.med)+' €':'–'}</b><span>prix médian</span></div>
+        <div class="stat"><b>${r.km!=null?fmt(r.km)+' km':'–'}</b><span>km moyen</span></div>
+        <div class="stat"><b>${liveTxt}</b><span>sans défaut au dernier scan</span></div>
+      </div>
+      ${consoBlock(m)}
+      ${r.note ? `<div class="refnote" style="padding-top:10px">Réf. : ${esc(r.note)}</div>` : ''}
+      ${shown.length ? `<div class="ads">${shown.map((a,i)=>adCard(a,i+1,target,sel.pick.get(a.id))).join('')}</div>`
+        : `<div class="empty">${live ? 'Aucune annonce correspondante pour l’instant.' : 'Pas encore scanné.'}</div>`}
+      ${ads.length>sel.shown.length ? `<button class="more" data-id="${m.id}">${showAll?'Revenir à la sélection ('+sel.shown.length+')':'Afficher les '+ads.length+' annonces'}</button>` : ''}
+    </section>`;
+  }).join('');
+  list.querySelectorAll('.more').forEach(b => b.onclick = () => { const id=b.dataset.id; expanded.has(id)?expanded.delete(id):expanded.add(id); render(); });
+  list.querySelectorAll('.avisbtn').forEach(b => b.onclick = () => openAvis(b.dataset.target, b.dataset.title));
+}
+
+async function refreshResults(){
+  RESULTS = await fetch(API.results + (ONLINE ? '?t=' + Date.now() : ''), { cache: 'no-store' }).then(r=>r.json()).catch(()=>({}));
+  render();
+}
+
+async function checkStatus(){
+  if (ONLINE){
+    const last = RESULTS.generated_at ? new Date(RESULTS.generated_at) : null;
+    const every = SEG === 'diesel' ? '2 h' : 'heure';
+    $('#meta').textContent = (last ? 'Dernier scan : ' + fmtDate(RESULTS.generated_at) : 'Aucun scan reçu') + ` · mise à jour automatique environ toutes les ${every === 'heure' ? 'heures' : every}`;
+    const stale = !last || (Date.now() - last.getTime()) > (SEG === 'diesel' ? 5 : 3.5) * 3600 * 1000;
+    $('#banner').innerHTML = stale ? `<div class="banner">Pas de mise à jour depuis un moment : l’ordinateur qui fait les recherches est éteint, ou Leboncoin limite temporairement les recherches automatiques (reprise toute seule).</div>` : '';
+    return;
+  }
+  const st = await fetch('/api/status').then(r=>r.json()).catch(()=>({state:'down'}));
+  const btn = $('#run'), bar = $('#bar'), banner = $('#banner');
+  const last = RESULTS.generated_at ? 'Dernier scan : '+fmtDate(RESULTS.generated_at) : 'Aucun scan pour l’instant';
+  banner.innerHTML = '';
+  if (st.state === 'running'){
+    btn.disabled = true; btn.textContent = 'Recherche en cours…';
+    bar.style.width = Math.round(100*(st.step||0)/(st.total||20))+'%';
+    $('#meta').textContent = `${last} · scan en cours : ${st.current||''} (${st.step||0}/${st.total||20})`;
+    if (!polling) polling = setInterval(tick, 2000);
+  } else {
+    btn.disabled = false; btn.textContent = 'Lancer une recherche'; bar.style.width = '0';
+    $('#meta').textContent = last;
+    if (st.state === 'blocked') banner.innerHTML = `<div class="banner">Leboncoin bloque temporairement les recherches automatiques : pause jusqu’à ${st.blocked_until ? fmtDate(st.blocked_until) : 'plus tard'}, reprise automatique.</div>`;
+    if (st.state === 'error') banner.innerHTML = `<div class="banner">Le dernier scan a échoué : ${esc(st.error)}. Vérifiez que le serveur MCP Leboncoin tourne sur le port 3001.</div>`;
+    if (st.state === 'down') banner.innerHTML = `<div class="banner">Le serveur local ne répond pas.</div>`;
+    if (polling){ clearInterval(polling); polling = null; await refreshResults(); $('#meta').textContent = 'Dernier scan : '+fmtDate(RESULTS.generated_at); }
+  }
+}
+async function tick(){ await checkStatus(); }
+
+$('#run').onclick = async () => {
+  $('#run').disabled = true;
+  const r = await fetch('/api/run',{method:'POST'});
+  if (!r.ok){ const e = await r.json().catch(()=>({})); $('#banner').innerHTML = `<div class="banner">${esc(e.error||'Impossible de lancer le scan')}</div>`; }
+  setTimeout(checkStatus, 600);
+  if (!polling) polling = setInterval(tick, 2000);
+};
+for (const k of PREF_KEYS) $('#'+k).addEventListener('change', () => { savePrefs(); render(); });
+
+(async function init(){
+  loadPrefs();
+  const s = await fetch(API.models + (ONLINE ? '?t=' + Date.now() : ''), { cache: 'no-store' }).then(r=>r.json());
+  MODELS = s.models; FUEL = s.fuel; MONTHLY_KM = s.monthly_km || 1200; $('#refDate').textContent = s.ref_date;
+  if (s.filters) FILTERS = s.filters;
+  $('#tab-' + SEG).classList.add('on');
+  document.title = 'Veille Leboncoin · ' + (SEG === 'diesel' ? 'Diesel' : 'Essence');
+  const consoSrc = SEG === 'diesel'
+    ? `Consommation mixte réelle issue du classement ; ville (≈ +20 %) et autoroute 130 (≈ +10 %) estimées à partir de cette valeur.`
+    : `Consommations réelles (pas l'homologation) issues de relevés Spritmonitor, d'avis propriétaires fiches-auto.fr et d'auto-abc.eu ; autoroute à 130 km/h ; ±0,5 L selon conduite et saison.`;
+  if (FUEL) $('#fuel').innerHTML = `Coût carburant calculé avec le ${esc(FUEL.name)} à <b>${FUEL.price.toFixed(2).replace('.',',')} €/L</b> (moyenne nationale relevée le ${esc(FUEL.date)}).
+    ${consoSrc}
+    Colonne mensuelle = consommation mixte réelle × ${fmt(MONTHLY_KM)} km.`;
+  await loadComments();
+  if (ONLINE){
+    $('#run').style.display = 'none';
+    setInterval(async () => { await loadComments(); await refreshResults(); await checkStatus(); }, 5 * 60 * 1000);
+  }
+  await refreshResults();
+  await checkStatus();
+})();
+
+$('#avisClose').onclick = () => $('#avisDlg').close();
+$('#avisForm').onsubmit = async (ev) => {
+  ev.preventDefault();
+  const dlg = $('#avisDlg'), msg = $('#avisMsg'), btn = $('#avisSend');
+  const payload = { target: dlg.dataset.target, title: dlg.dataset.title, name: $('#avisName').value,
+    verdict: $('#avisVerdict').value, text: $('#avisText').value, code: $('#avisCode').value };
+  try { localStorage.setItem('avis-name', payload.name); localStorage.setItem('avis-code', payload.code); } catch(e){}
+  btn.disabled = true; msg.textContent = 'Envoi…';
+  const r = await fetch(SB_URL + '/rest/v1/rpc/veille_add_avis', { method: 'POST', headers: SB_HEADERS,
+    body: JSON.stringify({ p_code: payload.code, p_target: payload.target, p_name: payload.name,
+      p_verdict: payload.verdict, p_text: payload.text, p_title: (payload.title || '').slice(0, 160) }) }).catch(() => null);
+  btn.disabled = false;
+  if (!r || !r.ok){ const e = r ? await r.json().catch(() => ({})) : {}; msg.textContent = e.message || 'Envoi impossible, réessayez.'; return; }
+  await loadComments(); render(); openAvis(payload.target, payload.title);
+  $('#avisMsg').textContent = 'Merci, avis enregistré.';
+};
+</script>
+</body>
+</html>
